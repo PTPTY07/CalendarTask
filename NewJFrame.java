@@ -5,16 +5,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NewJFrame extends javax.swing.JFrame {
-
+    //dichiaro task manager che gestirà le task
     TaskManager taskManager = new TaskManager();
-    boolean show = true;
-    
-    TS temp_TS = null;
-    EVT temp_EVT = null;
+    //showallTS = true -> mostra tutte le task
+    boolean showallTS = true;
     
     public NewJFrame() throws IOException {
         initComponents();
+        //carichiamo le task da file, path dichiarato in taskManager
         taskManager.caricaDaFile(taskManager.getPathTS());
+        //aggiorniamo la visualizzazzione della tabella delle task
+        // con quelle caricate da file
         AggiornaTabellaTS();
     }
 
@@ -201,130 +202,154 @@ public class NewJFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void button_addTSMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_addTSMouseClicked
-                                                  
-    JTextField taskField = new JTextField();
-    // JComboBox con valori da 1 a 10
-    Integer[] prioritaOptions = {1,2,3,4,5,6,7,8,9,10};
-    JComboBox<Integer> priorityCombo = new JComboBox<>(prioritaOptions);
+        //Jtext dove verranno aggiunti i dettagli delle task                       
+        JTextField taskField = new JTextField();
+        // JComboBox con valori da 1 a 10
+        Integer[] prioritaOptions = {1,2,3,4,5,6,7,8,9,10};
+        JComboBox<Integer> priorityCombo = new JComboBox<>(prioritaOptions);
+        
+        //inizializzo variabili locali
+        String str_task = null;
+        Integer priorita = null;
+        boolean taskValido = false;
 
-    String str = null;
-    Integer priorita = null;
-    boolean taskValido = false;
+        //finche non si inserisce un task valido si rimane nella
+        //schermata, a meno che non si schiaccia annula
+        while (!taskValido) {
+            Object[] message = {
+                "Task:", taskField,
+                "Priorità:", priorityCombo
+            };
 
-    while (!taskValido) {
-        Object[] message = {
-            "Task:", taskField,
-            "Priorità:", priorityCombo
-        };
+            int option = JOptionPane.showConfirmDialog(
+                this,
+                message,
+                "Inserisci nuova task",
+                JOptionPane.OK_CANCEL_OPTION
+            );
 
-        int option = JOptionPane.showConfirmDialog(
-            this,
-            message,
-            "Inserisci nuova task",
-            JOptionPane.OK_CANCEL_OPTION
-        );
-
-        if (option != JOptionPane.OK_OPTION) {
-            // Annulla: esci senza fare nulla
-            return;
+            if (option != JOptionPane.OK_OPTION) {
+                // Annulla: esci senza fare nulla
+                return;
+            }
+            
+            //attribuisce a str_task i dettagli della task
+            str_task = taskField.getText().trim();
+            //verifica che sia valido l'input
+            if (str_task.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Inserisci un task valido.");
+            } else {
+                taskValido = true;
+            }
         }
 
-        str = taskField.getText().trim();
-        if (str.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Inserisci un task valido.");
-        } else {
-            taskValido = true;
-        }
-    }
-    
-    // Leggi la priorità selezionata dal JComboBox
-    priorita = (Integer) priorityCombo.getSelectedItem();
+        // Leggi la priorità selezionata dal JComboBox
+        priorita = (Integer) priorityCombo.getSelectedItem();
 
-    // Aggiungi i dati alla JTable
-    
-    TS task_tmp = new TS(str, priorita);
-    taskManager.addTask(task_tmp);
-    taskManager.ordinaTask();
-    AggiornaTabellaTS();
+        // Aggiungi i dati alla JTable
+        
+        TS task_tmp = new TS(str_task, priorita);
+        //inserisce la task direttamente in ordine di priorità
+        taskManager.addTask(task_tmp);
+        AggiornaTabellaTS();
     }//GEN-LAST:event_button_addTSMouseClicked
 
     private void table_taskMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_taskMouseClicked
+        //prendo la riga selezionata dalla tabella TS
         int selectedRow = table_task.getSelectedRow();
-        if (selectedRow != -1) {
+        // se non è selezionata nessuna riga non faccio nulla
+        if (selectedRow != -1) 
+        {
+            // salvo il contenuto della task selezionata in una variabile (colonna 0 della tabella)
             String taskStr = (String) table_task.getValueAt(selectedRow, 0);
 
+            // leggo il valore della priorità (colonna 1 della tabella)
             Object val = table_task.getValueAt(selectedRow, 1);
+
+            // controllo se il valore è già un intero o una stringa, e lo converto in int
             int priorita = (val instanceof Integer) ? (Integer) val : Integer.parseInt(val.toString());
 
+            // mostro il testo della task nel campo di testo
             textarea_showTS.setText(taskStr);
+
+            // imposto nella combobox la priorità corrispondente
+            // (sottraggo 1 perché gli indici della combo partono da 0)
             combobox_priorita.setSelectedIndex(priorita - 1);
 
-            temp_TS = taskManager.getTSIndex(selectedRow);
-            /*
-            int visualIndex = 0;
-            for (TS t : taskManager.getTaskList()) {
-                if (!t.complet || show) {
-                    if (visualIndex == selectedRow) {
-                        temp_TS = t;
-                        break;
-                    }
-                    visualIndex++;
-                }
-            }*/
+            // salvo la task selezionata come temporanea nel task manager
+            // utile per modifiche o aggiornamenti successivi
+            taskManager.setTemp_TS(taskManager.getTSIndex(selectedRow));
         }
     }//GEN-LAST:event_table_taskMouseClicked
 
     private void button_savechangeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_savechangeMouseClicked
-        int selectedRow = table_task.getSelectedRow();
-        if (selectedRow != -1 && temp_TS != null && !temp_TS.complet) {
-            taskManager.removeTask(temp_TS);
+        int selectedRow = table_task.getSelectedRow(); // ottengo la riga selezionata
 
-            String descrizione = textarea_showTS.getText();
-            int priorita = Integer.parseInt((String) combobox_priorita.getSelectedItem());
+        // se c'è una riga selezionata e la task temporanea non è completata
+        if (selectedRow != -1 && taskManager.getTemp_TS() != null && !taskManager.getTemp_TS().complet) {
 
-            TS task_tmp = new TS(descrizione, priorita);
-            taskManager.addTask(task_tmp);
-            AggiornaTabellaTS();
+            taskManager.removeTask(taskManager.getTemp_TS()); // rimuovo la task temporanea
 
+            String descrizione = textarea_showTS.getText(); // leggo la descrizione aggiornata
+            int priorita = Integer.parseInt((String) combobox_priorita.getSelectedItem()); // leggo la priorità selezionata
+
+            TS task_tmp = new TS(descrizione, priorita); // creo una nuova task con i dati aggiornati
+            taskManager.addTask(task_tmp); // la aggiungo al task manager
+            AggiornaTabellaTS(); // aggiorno la visualizzazione della tabella
+
+            // resetto i campi e selezioni
             textarea_showTS.setText("");
             combobox_priorita.setSelectedIndex(0);
             table_task.clearSelection();
-            temp_TS = null;
+            taskManager.setTemp_TS(null);
+
         } else {
+            // messaggio se nessuna riga selezionata o task completata
             JOptionPane.showMessageDialog(this, "Seleziona prima una riga da modificare che non sia completata.");
         }
+
     }//GEN-LAST:event_button_savechangeMouseClicked
 
     private void button_completTSMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_completTSMouseClicked
-        int selectedRow = table_task.getSelectedRow();
+        int selectedRow = table_task.getSelectedRow(); // ottengo la riga selezionata
         if (selectedRow != -1) {
-            // mappiamo la riga visuale al TS reale, rispettando il filtro "show"
+            taskManager.markCompleted(taskManager.getTaskList().get(selectedRow));
+            AggiornaTabellaTS();
+        } else {
+            // messaggio se nessuna riga selezionata
+            JOptionPane.showMessageDialog(this, "Seleziona prima una riga da modificare.");
+        }
+        
+        /*
+        if (selectedRow != -1) {
+            // mappiamo la riga visuale alla task reale, rispettando il filtro "showallTS"
             int visualIndex = 0;
             for (TS t : taskManager.getTaskList()) {
-                if (!t.complet || show) {
+                if (!t.complet || showallTS) { // consideriamo solo task non completate o tutte se showallTS=true
                     if (visualIndex == selectedRow) {
-                        // marca completata e sposta subito dopo l'ultima non-completata
-                        taskManager.markCompleted(t);
+                        taskManager.markCompleted(t); // marca la task come completata
 
-                        // Aggiorna vista
-                        AggiornaTabellaTS();
+                        AggiornaTabellaTS(); // aggiorna la tabella
 
+                        // reset dei campi e selezione
                         textarea_showTS.setText("");
                         table_task.clearSelection();
-                        temp_TS = null;
+                        taskManager.setTemp_TS(null);
                         break;
                     }
                     visualIndex++;
                 }
             }
         } else {
+            // messaggio se nessuna riga selezionata
             JOptionPane.showMessageDialog(this, "Seleziona prima una riga da modificare.");
-        }
+        }*/
+
     }//GEN-LAST:event_button_completTSMouseClicked
 
     private void button_showTSMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_showTSMouseClicked
-        show = !show;
-        if (show)
+        showallTS = !showallTS;
+        if (showallTS)
             button_showTS.setText("Mostra solo non completate");
         else
             button_showTS.setText("Mostra tutte");
@@ -404,7 +429,6 @@ public class NewJFrame extends javax.swing.JFrame {
 
     private void table_evtMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_evtMouseClicked
         table_evt.getSelectedRow();
-        
     }//GEN-LAST:event_table_evtMouseClicked
 
     
@@ -426,12 +450,9 @@ public class NewJFrame extends javax.swing.JFrame {
         var model = (javax.swing.table.DefaultTableModel) table_task.getModel();
         model.setRowCount(0);
 
-        // Ordina i task prima internamente: non completati per priorità, completati per ordine di completamento
-        taskManager.ordinaTask(); // funzione già presente in TaskManager
-
         // Aggiungi i task alla JTable rispettando il flag "show"
         for (TS t : taskManager.getTaskList()) {
-            if (!t.complet || show) {
+            if (!t.complet || showallTS) {
                 model.addRow(new Object[]{t.str, t.priorita, t.complet});
             }
         }

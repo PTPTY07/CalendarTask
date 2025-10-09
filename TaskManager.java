@@ -4,7 +4,8 @@ import java.util.Comparator;
 
 public class TaskManager {
     private ArrayList<TS> taskList;
-    private String pathTS = "tasks.txt";
+    private final String pathTS = "tasks.txt";
+    private TS temp_TS = null;
 
     //costruttore
     public TaskManager() {
@@ -21,6 +22,16 @@ public class TaskManager {
         return pathTS;
     }
     
+    public TS getTemp_TS()
+    {
+        return temp_TS;
+    }
+    
+    public void setTemp_TS(TS temp_TS)
+    {
+        this.temp_TS = temp_TS;
+    }
+    
     private int lastUncompletedIndex() {
         int last = -1;
         for (int i = 0; i < taskList.size(); i++) {
@@ -31,13 +42,21 @@ public class TaskManager {
     
     public void addTask(TS t) {
         if (!t.complet) {
-            int insertPos = lastUncompletedIndex() + 1; // inserisci dopo l'ultima non completata
-            taskList.add(insertPos, t);
+            int firstIndex = 0;
+            while (firstIndex < taskList.size() && taskList.get(firstIndex).complet == false) {
+                // trova la posizione giusta in base alla priorità 
+                if (t.priorita < taskList.get(firstIndex).priorita) {
+                    break;
+                }
+                firstIndex++;
+            }
+            taskList.add(firstIndex, t);
         } else {
-            // se è già completata la appendi alla fine (o scegli policy diversa)
+            // task già completata → aggiungi in fondo
             taskList.add(t);
         }
     }
+
 
     public void removeTask(TS t) {
         taskList.remove(t);
