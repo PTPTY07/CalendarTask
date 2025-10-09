@@ -1,0 +1,13 @@
+fghdf;1;false
+Aggiornare PC;2;false
+hcmhvn;3;false
+Fare la spesa;3;true
+regalo amore miodcuhbsdiucva<sc;1;true
+Finire progetto;1;true
+Studiare Java;4;true
+Pulire la casa;5;true
+Andare al cinema;6;true
+Fare sport;7;true
+Leggere libro;8;true
+Chiamare Luca;9;true
+Comprare regalo;10;true
