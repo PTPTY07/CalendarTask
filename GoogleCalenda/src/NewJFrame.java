@@ -93,7 +93,7 @@ public class NewJFrame extends javax.swing.JFrame {
         getContentPane().add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(830, 10, 10, 430));
 
         button_showTS.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        button_showTS.setText("show all/none");
+        button_showTS.setText("Mostra solo non completate");
         button_showTS.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 button_showTSMouseClicked(evt);
@@ -323,30 +323,38 @@ public class NewJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_button_completTSMouseClicked
 
     private void button_showTSMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_showTSMouseClicked
+        //se prima showallTS era true diventa false e viceversa
         showallTS = !showallTS;
         if (showallTS)
             button_showTS.setText("Mostra solo non completate");
         else
             button_showTS.setText("Mostra tutte");
+        //aggiorno la tabella in base a cosa voglio visualizzare
         AggiornaTabellaTS();
     }//GEN-LAST:event_button_showTSMouseClicked
 
     private void button_sqMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_sqMouseClicked
+        //button save and quit
         try {
+            //salva su file tasks.txt
             taskManager.salvaSuFile(taskManager.getPathTS());
             System.out.println("Salvataggio su file: " + taskManager.getPathTS());
         } catch (IOException ex) {
             Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
+        //chiude il programma
         System.exit(0);
     }//GEN-LAST:event_button_sqMouseClicked
 
     private void button_addEVMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_addEVMouseClicked
+        //inizializzo i TextField per l'aggiunta degli EVT
         JTextField luogoField = new JTextField();
         JTextField oraField = new JTextField();
         JTextField dettagliField = new JTextField();
 
+        //valido = false finche almeno un campo è vuoto
         boolean valido = false;
+        //nuovo evento
         EVT nuovoEvento = null;
 
         while (!valido) {
@@ -422,10 +430,11 @@ public class NewJFrame extends javax.swing.JFrame {
 
     
     private void AggiornaTabellaTS() {
+        //crea un modello sulla base della tabella delle task
         var model = (javax.swing.table.DefaultTableModel) table_task.getModel();
         model.setRowCount(0);
 
-        // Aggiungi i task alla JTable rispettando il flag "show"
+        // Aggiungi i task alla JTable rispettando il flag "showallTS"
         for (TS t : taskManager.getTaskList()) {
             if (!t.complet || showallTS) {
                 model.addRow(new Object[]{t.str, t.priorita, t.complet});
