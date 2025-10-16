@@ -1,6 +1,5 @@
 import java.io.IOException;
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -387,27 +386,7 @@ public class NewJFrame extends javax.swing.JFrame {
             }
         }
 
-        // 🔹 Aggiungi riga nella tabella
-        var model = (javax.swing.table.DefaultTableModel) table_evt.getModel();
-        model.addRow(new Object[]{nuovoEvento.getOraFormattata(), nuovoEvento.dettagli_evt, nuovoEvento.luogo});
-
-        // 🔹 Riordina le righe in base all'ora (stringa)
-        ArrayList<EVT> eventi = new ArrayList<>();
-
-        for (int i = 0; i < model.getRowCount(); i++) {
-            String ora = (String) model.getValueAt(i, 0);
-            String dettagli = (String) model.getValueAt(i, 1);
-            String luogo = (String) model.getValueAt(i, 2);
-            eventi.add(new EVT(dettagli, luogo, ora));
-        }
-
-        EVT.ordinaPerOra(eventi);
-
-        // 🔹 Aggiorna tabella ordinata
-        model.setRowCount(0);
-        for (EVT e : eventi) {
-            model.addRow(new Object[]{e.getOraFormattata(), e.dettagli_evt, e.luogo});
-        }
+        
     }//GEN-LAST:event_button_addEVMouseClicked
 
     private void table_evtMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_evtMouseClicked
@@ -440,6 +419,10 @@ public class NewJFrame extends javax.swing.JFrame {
                 model.addRow(new Object[]{t.str, t.priorita, t.complet});
             }
         }
+    }
+    
+    private void AggiornaTabellaEVT() {
+        
     }
 
     

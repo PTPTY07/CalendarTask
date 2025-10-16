@@ -1,6 +1,6 @@
 fghdf;1;false
 Aggiornare PC;2;false
-hcmhvn;3;false
+hcmhvn;3;true
 Fare la spesa;3;true
 regalo amore miodcuhbsdiucva<sc;1;true
 Finire progetto;1;true
