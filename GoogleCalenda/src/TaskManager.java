@@ -32,6 +32,7 @@ public class TaskManager {
         this.temp_TS = temp_TS;
     }
     
+    //cerca l'indice dell'ultitima task non ancora completata
     private int lastUncompletedIndex() {
         int last = -1;
         for (int i = 0; i < taskList.size(); i++) {

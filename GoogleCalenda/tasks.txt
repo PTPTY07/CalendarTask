@@ -1,4 +1,5 @@
 fghdf;1;false
+ciaooo;2;false
 Aggiornare PC;2;false
 hcmhvn;3;true
 Fare la spesa;3;true
