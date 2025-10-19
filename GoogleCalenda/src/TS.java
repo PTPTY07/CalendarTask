@@ -17,7 +17,7 @@ public class TS
         complet = false;
     }
     
-    public void setPriorita(int priorita)
+    /*public void setPriorita(int priorita)
     {
         this.priorita = priorita;
     }
@@ -30,5 +30,5 @@ public class TS
     public void setComplet(boolean b)
     {
         complet = b;
-    }
+    }*/
 }

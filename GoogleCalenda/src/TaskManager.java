@@ -113,6 +113,8 @@ public class TaskManager {
                 nuovo.complet = Boolean.parseBoolean(parts[2].trim());
                 taskList.add(nuovo);
             }
+            
+            //-------------------Controllo forse non necessario-------------------------
             ordinaTask();
         }
     }
