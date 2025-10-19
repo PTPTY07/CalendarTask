@@ -102,8 +102,8 @@ public class TaskManager {
     }
 
 
-    public void caricaDaFile(String filePath) throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+    public void caricaDaFile() throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(pathTS))) {
             String line;
             taskList.clear();
             while ((line = br.readLine()) != null) {
@@ -119,8 +119,8 @@ public class TaskManager {
         }
     }
 
-    public void salvaSuFile(String filePath) throws IOException {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(filePath))) {
+    public void salvaSuFile() throws IOException {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(pathTS))) {
             for (TS t : taskList) {
                 pw.println(t.str + ";" + t.priorita + ";" + t.complet);
             }

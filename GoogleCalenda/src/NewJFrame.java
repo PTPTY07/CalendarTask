@@ -1,18 +1,27 @@
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import javax.swing.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
 
 public class NewJFrame extends javax.swing.JFrame {
     //dichiaro task manager che gestirà le task
     TaskManager taskManager = new TaskManager();
+    EventManager eventManager = new EventManager();
     //showallTS = true -> mostra tutte le task
     boolean showallTS = true;
     
     public NewJFrame() throws IOException {
         initComponents();
         //carichiamo le task da file, path dichiarato in taskManager
-        taskManager.caricaDaFile(taskManager.getPathTS());
+        taskManager.caricaDaFile();
+        //eventManager.ReadFile();
         //aggiorniamo la visualizzazzione della tabella delle task
         // con quelle caricate da file
         AggiornaTabellaTS();
@@ -47,6 +56,11 @@ public class NewJFrame extends javax.swing.JFrame {
 
         calendar.setTodayButtonText("");
         calendar.setTodayButtonVisible(true);
+        calendar.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                calendarPropertyChange(evt);
+            }
+        });
         getContentPane().add(calendar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 820, 460));
 
         table_task.setFont(new java.awt.Font("Segoe UI Semibold", 1, 18)); // NOI18N
@@ -336,8 +350,9 @@ public class NewJFrame extends javax.swing.JFrame {
         //button save and quit
         try {
             //salva su file tasks.txt
-            taskManager.salvaSuFile(taskManager.getPathTS());
-            System.out.println("Salvataggio su file: " + taskManager.getPathTS());
+            taskManager.salvaSuFile();
+            eventManager.SaveFile();
+            System.out.println("Salvataggio su file:\n- " + taskManager.getPathTS() + "\n- " + eventManager.getPathEVT());
         } catch (IOException ex) {
             Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -347,51 +362,81 @@ public class NewJFrame extends javax.swing.JFrame {
 
     private void button_addEVMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_button_addEVMouseClicked
         //inizializzo i TextField per l'aggiunta degli EVT
-        JTextField luogoField = new JTextField();
-        JTextField oraField = new JTextField();
-        JTextField dettagliField = new JTextField();
+        // Campi di input
+    JTextField luogoField = new JTextField();
+    JTextField oraField = new JTextField();
+    JTextField dettagliField = new JTextField();
 
-        //valido = false finche almeno un campo è vuoto
-        boolean valido = false;
-        //nuovo evento
-        EVT nuovoEvento = null;
+    // valido = false finché almeno un campo è vuoto
+    boolean valido = false;
+    // nuovo evento
+    EVT nuovoEvento = null;
 
-        while (!valido) {
-            Object[] message = {
-                "Luogo:", luogoField,
-                "Ora (HH:mm):", oraField,
-                "Dettagli evento:", dettagliField
-            };
+    while (!valido) {
+        Object[] message = {
+            "Luogo:", luogoField,
+            "Ora (HH:mm):", oraField,
+            "Dettagli evento:", dettagliField
+        };
 
-            int option = JOptionPane.showConfirmDialog(
-                this,
-                message,
-                "Inserisci nuovo evento",
-                JOptionPane.OK_CANCEL_OPTION
-            );
+        int option = JOptionPane.showConfirmDialog(
+            this,
+            message,
+            "Inserisci nuovo evento",
+            JOptionPane.OK_CANCEL_OPTION
+        );
 
-            if (option != JOptionPane.OK_OPTION) {
-                return; // Annullato
-            }
-
-            String luogo = luogoField.getText().trim();
-            String ora = oraField.getText().trim();
-            String dettagli = dettagliField.getText().trim();
-
-            if (luogo.isEmpty() || ora.isEmpty() || dettagli.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Compila tutti i campi.");
-            } else {
-                nuovoEvento = new EVT(dettagli, luogo, ora);
-                valido = true;
-            }
+        if (option != JOptionPane.OK_OPTION) {
+            return; // Annullato
         }
 
-        
+        String luogo = luogoField.getText().trim();
+        String ora = oraField.getText().trim();
+        String dettagli = dettagliField.getText().trim();
+
+        //Prendi la data selezionata dal JCalendar
+        Date dataSelezionata = calendar.getDate();
+
+        if (dataSelezionata == null) {
+            JOptionPane.showMessageDialog(this, "Seleziona una data dal calendario.");
+            continue;
+        }
+
+        if (luogo.isEmpty() || ora.isEmpty() || dettagli.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Compila tutti i campi.");
+            continue;
+        }
+
+        try {
+            //Combina la data e l'ora in un unico oggetto Date
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            String dataOraStr = new SimpleDateFormat("dd/MM/yyyy").format(dataSelezionata) + " " + ora;
+            Date dataCompleta = sdf.parse(dataOraStr);
+
+            //Crea l’oggetto EVT con data, dettagli e luogo
+            nuovoEvento = new EVT(dataCompleta, dettagli, luogo);
+            valido = true;
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Formato ora non valido. Usa HH:mm (es: 14:30)");
+        }
+    }
+
+    
+    // Aggiungi l'evento alla lista
+    if (nuovoEvento != null) {
+        eventManager.insertSorted(nuovoEvento);
+    }
+    aggiornaTabellaEVT();
     }//GEN-LAST:event_button_addEVMouseClicked
 
     private void table_evtMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_evtMouseClicked
         table_evt.getSelectedRow();
     }//GEN-LAST:event_table_evtMouseClicked
+
+    private void calendarPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_calendarPropertyChange
+        aggiornaTabellaEVT();
+    }//GEN-LAST:event_calendarPropertyChange
 
     
     public static void main(String args[]) {
@@ -421,8 +466,45 @@ public class NewJFrame extends javax.swing.JFrame {
         }
     }
     
-    private void AggiornaTabellaEVT() {
-        
+    public void aggiornaTabellaEVT() {
+        // Ottieni la data selezionata dal JCalendar
+        Date dataSelezionata = calendar.getDate();
+        if (dataSelezionata == null) {
+            JOptionPane.showMessageDialog(null, "Seleziona una data dal calendario.");
+            return;
+        }
+
+        // Formatter per confrontare solo giorno/mese/anno
+        SimpleDateFormat sdfGiorno = new SimpleDateFormat("dd/MM/yyyy");
+        String giornoScelto = sdfGiorno.format(dataSelezionata);
+
+        // Formatter per l'ora degli eventi
+        SimpleDateFormat sdfOra = new SimpleDateFormat("HH:mm");
+
+        // Crea il modello della JTable
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Ora");
+        model.addColumn("Dettagli");
+        model.addColumn("Luogo");
+
+        // Filtra eventi per la data selezionata
+        List<EVT> eventiFiltrati = new ArrayList<>();
+        for (EVT e : eventManager.getEVTList()) {
+            if (e.data_EVT != null && sdfGiorno.format(e.data_EVT).equals(giornoScelto)) {
+                eventiFiltrati.add(e);
+            }
+        }
+
+        // Ordina per ora
+        eventiFiltrati.sort(Comparator.comparing(ev -> ev.data_EVT));
+
+        // Aggiungi al modello della tabella
+        for (EVT e : eventiFiltrati) {
+            model.addRow(new Object[]{sdfOra.format(e.data_EVT), e.dettagli_EVT, e.luogo_EVT});
+        }
+
+        // Aggiorna la JTable
+        table_evt.setModel(model);
     }
 
     
